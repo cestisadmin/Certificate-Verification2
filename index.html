@@ -2,69 +2,464 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Certificate Verification</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificate Verification Portal</title>
 <style>
-body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-.card { max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 12px; }
-input { padding: 10px; width: 70%; }
-button { padding: 10px 20px; margin-top: 10px; cursor: pointer; }
-.result { margin-top: 20px; font-size: 1.1em; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 28px;
+    text-align: center;
+}
+
+.subtitle {
+    color: #666;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+input::placeholder {
+    color: #999;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.result {
+    margin-top: 30px;
+    padding: 20px;
+    border-radius: 10px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.result.success {
+    background: #e8f5e9;
+    border: 2px solid #4caf50;
+    color: #2e7d32;
+}
+
+.result.error {
+    background: #ffebee;
+    border: 2px solid #f44336;
+    color: #c62828;
+}
+
+.result.warning {
+    background: #fff3e0;
+    border: 2px solid #ff9800;
+    color: #e65100;
+}
+
+.result-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.result-icon {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.result-details {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.detail-value {
+    color: #333;
+    text-align: right;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-valid {
+    background: #4caf50;
+    color: white;
+}
+
+.status-expired {
+    background: #f44336;
+    color: white;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    color: #999;
+    font-size: 12px;
+}
 </style>
 </head>
 <body>
-<div class="card">
-<h2>Certificate Verification</h2>
-<p>Enter your certificate number below:</p>
-<input type="text" id="certNumber" placeholder="e.g., PV-2025-001">
-<br>
-<button onclick="verifyCertificate()">Verify</button>
-<div class="result" id="result"></div>
+<div class="container">
+    <div class="card">
+        <h2>🎓 Certificate Verification</h2>
+        <p class="subtitle">Enter your certificate number to verify its authenticity</p>
+        
+        <div class="input-group">
+            <input 
+                type="text" 
+                id="certNumber" 
+                placeholder="e.g., PV-2025-001"
+                onkeypress="handleKeyPress(event)"
+            >
+        </div>
+        
+        <button id="verifyBtn" onclick="verifyCertificate()">
+            <span id="btnText">Verify Certificate</span>
+        </button>
+        
+        <div id="result"></div>
+        
+        <div class="footer">
+            Powered by Secure Certificate Verification System
+        </div>
+    </div>
 </div>
 
 <script>
 // URL of the published Google Sheet (CSV)
-const sheetUrl = https://docs.google.com/spreadsheets/d/e/2PACX-1vSIOIL4QC_d-aboWcVALVFqg4-qo167PazN00clbYzBYPZUFxrISZWQ3AAmJfznfPqZ0f9Q43a-nf6f/pub?output=csv;
+const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSIOIL4QC_d-aboWcVALVFqg4-qo167PazN00clbYzBYPZUFxrISZWQ3AAmJfznfPqZ0f9Q43a-nf6f/pub?output=csv';
 
-// Helper: parse CSV into array of objects
+// Cache for sheet data
+let cachedData = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Helper: parse CSV into array of objects with better handling
+function parseCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) return [];
+    
+    // Parse headers
+    const headers = parseCSVLine(lines[0]);
+    
+    // Parse data rows
+    const data = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values.length === headers.length) {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header.trim()] = values[index].trim();
+            });
+            data.push(obj);
+        }
+    }
+    
+    return data;
+}
+
+// Parse a single CSV line handling quoted values
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current);
+    return result;
+}
+
+// Fetch sheet data with caching
 async function fetchSheetData() {
-  const response = await fetch(sheetUrl);
-  const csvText = await response.text();
-  const lines = csvText.split("\n").filter(l => l.trim() !== "");
-  const headers = lines[0].split(",");
-  return lines.slice(1).map(line => {
-    const cols = line.split(",");
-    let obj = {};
-    headers.forEach((h, i) => obj[h.trim()] = cols[i].trim());
-    return obj;
-  });
+    const now = Date.now();
+    
+    // Use cached data if available and fresh
+    if (cachedData && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+        return cachedData;
+    }
+    
+    try {
+        const response = await fetch(sheetUrl);
+        if (!response.ok) {
+            throw new Error('Failed to fetch certificate data');
+        }
+        
+        const csvText = await response.text();
+        cachedData = parseCSV(csvText);
+        cacheTimestamp = now;
+        
+        return cachedData;
+    } catch (error) {
+        console.error('Error fetching sheet data:', error);
+        throw error;
+    }
 }
 
+// Handle Enter key press
+function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+        verifyCertificate();
+    }
+}
+
+// Main verification function
 async function verifyCertificate() {
-  const certNumber = document.getElementById("certNumber").value.trim();
-  const resultDiv = document.getElementById("result");
-  if (!certNumber) {
-    resultDiv.innerHTML = "⚠️ Please enter a certificate number.";
-    return;
-  }
-
-  const data = await fetchSheetData();
-  const cert = data.find(c => c.CertificateNo === certNumber);
-
-  if (cert) {
-    resultDiv.innerHTML = `
-      ✅ <b>Certificate Verified</b><br>
-      Certificate Number: ${cert.CertificateNo}<br>
-      Name: ${cert.Name}<br>
-      Course: ${cert.Course}<br>
-      Date: ${cert.Date}<br>
-      Status: ${cert.Status}
-    `;
-  } else {
-    resultDiv.innerHTML = "❌ Invalid or Unrecognized Certificate Number.";
-  }
+    const certNumber = document.getElementById('certNumber').value.trim();
+    const resultDiv = document.getElementById('result');
+    const button = document.getElementById('verifyBtn');
+    const btnText = document.getElementById('btnText');
+    
+    // Clear previous results
+    resultDiv.innerHTML = '';
+    
+    // Validate input
+    if (!certNumber) {
+        resultDiv.innerHTML = `
+            <div class="result warning">
+                <div class="result-header">
+                    <span class="result-icon">⚠️</span>
+                    Please enter a certificate number
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Disable button and show loading state
+    button.disabled = true;
+    btnText.innerHTML = '<span class="loader"></span>';
+    
+    try {
+        // Fetch and search data
+        const data = await fetchSheetData();
+        const cert = data.find(c => 
+            c.CertificateNo && 
+            c.CertificateNo.toLowerCase() === certNumber.toLowerCase()
+        );
+        
+        if (cert) {
+            // Certificate found - display details
+            const statusClass = cert.Status && cert.Status.toLowerCase() === 'valid' ? 'status-valid' : 'status-expired';
+            
+            resultDiv.innerHTML = `
+                <div class="result success">
+                    <div class="result-header">
+                        <span class="result-icon">✅</span>
+                        Certificate Verified Successfully
+                    </div>
+                    <div class="result-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Certificate Number:</span>
+                            <span class="detail-value">${cert.CertificateNo || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Name:</span>
+                            <span class="detail-value">${cert.Name || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Course:</span>
+                            <span class="detail-value">${cert.Course || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Date Issued:</span>
+                            <span class="detail-value">${cert.Date || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value">
+                                <span class="status-badge ${statusClass}">
+                                    ${cert.Status || 'Unknown'}
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Certificate not found
+            resultDiv.innerHTML = `
+                <div class="result error">
+                    <div class="result-header">
+                        <span class="result-icon">❌</span>
+                        Certificate Not Found
+                    </div>
+                    <p style="margin-top: 10px; font-size: 14px;">
+                        The certificate number "${certNumber}" was not found in our records. 
+                        Please check the number and try again.
+                    </p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        // Error occurred
+        resultDiv.innerHTML = `
+            <div class="result error">
+                <div class="result-header">
+                    <span class="result-icon">⚠️</span>
+                    Verification Error
+                </div>
+                <p style="margin-top: 10px; font-size: 14px;">
+                    Unable to verify certificate at this time. Please try again later.
+                </p>
+            </div>
+        `;
+    } finally {
+        // Re-enable button
+        button.disabled = false;
+        btnText.textContent = 'Verify Certificate';
+    }
 }
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus on input field
+    document.getElementById('certNumber').focus();
+});
 </script>
 </body>
-
 </html>
-
