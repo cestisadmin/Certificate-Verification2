@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Certificate Verification</title>
+<style>
+body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+.card { max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 12px; }
+input { padding: 10px; width: 70%; }
+button { padding: 10px 20px; margin-top: 10px; cursor: pointer; }
+.result { margin-top: 20px; font-size: 1.1em; }
+</style>
+</head>
+<body>
+<div class="card">
+<h2>Certificate Verification</h2>
+<p>Enter your certificate number below:</p>
+<input type="text" id="certNumber" placeholder="e.g., PV-2025-001">
+<br>
+<button onclick="verifyCertificate()">Verify</button>
+<div class="result" id="result"></div>
+</div>
+
+<script>
+// URL of the published Google Sheet (CSV)
+const sheetUrl = https://docs.google.com/spreadsheets/d/e/2PACX-1vSIOIL4QC_d-aboWcVALVFqg4-qo167PazN00clbYzBYPZUFxrISZWQ3AAmJfznfPqZ0f9Q43a-nf6f/pubhtml;
+
+// Helper: parse CSV into array of objects
+async function fetchSheetData() {
+  const response = await fetch(sheetUrl);
+  const csvText = await response.text();
+  const lines = csvText.split("\n").filter(l => l.trim() !== "");
+  const headers = lines[0].split(",");
+  return lines.slice(1).map(line => {
+    const cols = line.split(",");
+    let obj = {};
+    headers.forEach((h, i) => obj[h.trim()] = cols[i].trim());
+    return obj;
+  });
+}
+
+async function verifyCertificate() {
+  const certNumber = document.getElementById("certNumber").value.trim();
+  const resultDiv = document.getElementById("result");
+  if (!certNumber) {
+    resultDiv.innerHTML = "⚠️ Please enter a certificate number.";
+    return;
+  }
+
+  const data = await fetchSheetData();
+  const cert = data.find(c => c.CertificateNo === certNumber);
+
+  if (cert) {
+    resultDiv.innerHTML = `
+      ✅ <b>Certificate Verified</b><br>
+      Certificate Number: ${cert.CertificateNo}<br>
+      Name: ${cert.Name}<br>
+      Course: ${cert.Course}<br>
+      Date: ${cert.Date}<br>
+      Status: ${cert.Status}
+    `;
+  } else {
+    resultDiv.innerHTML = "❌ Invalid or Unrecognized Certificate Number.";
+  }
+}
+</script>
+</body>
+</html>
